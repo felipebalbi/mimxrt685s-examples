@@ -1,0 +1,30 @@
+# This workflow runs cargo-deny to check licenses, advisories, sources, and bans.
+permissions:
+  contents: read
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+name: cargo-deny
+jobs:
+  deny:
+    runs-on: ubuntu-latest
+    name: ubuntu / stable / deny
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Install stable
+        uses: dtolnay/rust-toolchain@stable
+      - name: cargo install cargo-deny
+        uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          log-level: warn
+          manifest-path: ./Cargo.toml
+          command: check
+          arguments: --all-features
